@@ -18,7 +18,8 @@ export class StateManager {
         os: null,
         distribution: null,
         shell: null
-      }
+      },
+      errors: []
     };
   }
 
@@ -35,6 +36,28 @@ export class StateManager {
     return false;
   }
 
+  // Alias for load() to match main.js expectations
+  async loadState() {
+    return this.load();
+  }
+
+  // Initialize state for first run
+  async initializeState() {
+    this.state = {
+      version: '1.0.0',
+      lastRun: null,
+      phases: {},
+      configs: {},
+      system: {
+        os: null,
+        distribution: null,
+        shell: null
+      },
+      errors: []
+    };
+    await this.save();
+  }
+
   async save() {
     try {
       this.state.lastRun = new Date().toISOString();
@@ -47,6 +70,11 @@ export class StateManager {
     }
   }
 
+  // Alias for save() to match main.js expectations
+  async saveState() {
+    return this.save();
+  }
+
   setPhaseStatus(phaseName, status) {
     this.state.phases[phaseName] = {
       ...this.state.phases[phaseName],
@@ -55,8 +83,23 @@ export class StateManager {
     };
   }
 
+  // Alias for setPhaseStatus to match main.js expectations
+  updatePhaseState(phaseName, status, result = null) {
+    this.state.phases[phaseName] = {
+      ...this.state.phases[phaseName],
+      status,
+      result,
+      lastUpdated: new Date().toISOString()
+    };
+  }
+
   getPhaseStatus(phaseName) {
     return this.state.phases[phaseName] || { installed: false, configured: false };
+  }
+
+  // Alias for getPhaseStatus to match main.js expectations
+  getPhaseState(phaseName) {
+    return this.state.phases[phaseName] || { status: 'pending' };
   }
 
   setConfigStatus(configName, status) {
@@ -79,6 +122,19 @@ export class StateManager {
     return this.state.system;
   }
 
+  // Add error state management
+  updateErrorState(error) {
+    this.state.errors.push({
+      message: error.message,
+      stack: error.stack,
+      timestamp: new Date().toISOString()
+    });
+  }
+
+  getErrors() {
+    return this.state.errors;
+  }
+
   isFirstRun() {
     return !this.state.lastRun;
   }
@@ -97,7 +153,8 @@ export class StateManager {
         os: null,
         distribution: null,
         shell: null
-      }
+      },
+      errors: []
     };
   }
 } 

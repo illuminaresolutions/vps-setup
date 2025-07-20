@@ -129,6 +129,22 @@ export class SystemDetector {
     return { os, distribution, shell };
   }
 
+  // Alias for getSystemInfo to match main.js expectations
+  async detectSystem() {
+    const [os, distribution, shell] = await Promise.all([
+      this.detectOS(),
+      this.detectDistribution(),
+      this.detectShell()
+    ]);
+
+    return { 
+      os, 
+      distribution, 
+      version: distribution, // Add version field for compatibility
+      shell 
+    };
+  }
+
   async validateSystem() {
     const os = await this.detectOS();
     const distribution = await this.detectDistribution();

@@ -1,12 +1,28 @@
 import { StateManager, SystemDetector, Logger, CommandRunner, Validator } from '../utils/index.js';
 
 export class OptionalPhase {
-  constructor() {
-    this.stateManager = new StateManager();
-    this.systemDetector = new SystemDetector();
-    this.logger = new Logger();
-    this.commandRunner = new CommandRunner();
-    this.validator = new Validator();
+  constructor(logger, stateManager, systemDetector, commandRunner, validator) {
+    this.logger = logger;
+    this.stateManager = stateManager;
+    this.systemDetector = systemDetector;
+    this.commandRunner = commandRunner;
+    this.validator = validator;
+  }
+
+  getName() {
+    return 'Optional Tools';
+  }
+
+  getDescription() {
+    return 'Install optional development and utility tools';
+  }
+
+  isOptional() {
+    return true;
+  }
+
+  async run(options = {}) {
+    return this.execute(options);
   }
 
   async execute(customizations = {}) {

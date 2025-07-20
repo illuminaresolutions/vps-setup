@@ -21,6 +21,11 @@ export class Logger {
     console.log(chalk.yellow('⚠'), message);
   }
 
+  // Alias for warning to match code expectations
+  warn(message) {
+    this.warning(message);
+  }
+
   error(message) {
     console.log(chalk.red('❌'), message);
   }

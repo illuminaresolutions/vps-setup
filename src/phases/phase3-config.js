@@ -2,14 +2,30 @@ import { StateManager, SystemDetector, Logger, CommandRunner, Validator } from '
 import { MicroConfigGenerator, ZshConfigGenerator } from '../templates/index.js';
 
 export class ConfigPhase {
-  constructor() {
-    this.stateManager = new StateManager();
-    this.systemDetector = new SystemDetector();
-    this.logger = new Logger();
-    this.commandRunner = new CommandRunner();
-    this.validator = new Validator();
+  constructor(logger, stateManager, systemDetector, commandRunner, validator) {
+    this.logger = logger;
+    this.stateManager = stateManager;
+    this.systemDetector = systemDetector;
+    this.commandRunner = commandRunner;
+    this.validator = validator;
     this.microGenerator = new MicroConfigGenerator();
     this.zshGenerator = new ZshConfigGenerator();
+  }
+
+  getName() {
+    return 'Configuration';
+  }
+
+  getDescription() {
+    return 'Generate and apply configuration files for Micro editor and Zsh';
+  }
+
+  isOptional() {
+    return false;
+  }
+
+  async run(options = {}) {
+    return this.execute(options);
   }
 
   async execute(customizations = {}) {

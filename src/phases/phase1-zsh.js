@@ -1,12 +1,29 @@
 import { StateManager, SystemDetector, Logger, CommandRunner, Validator } from '../utils/index.js';
 
 export class ZshPhase {
-  constructor() {
-    this.stateManager = new StateManager();
-    this.systemDetector = new SystemDetector();
-    this.logger = new Logger();
-    this.commandRunner = new CommandRunner();
-    this.validator = new Validator();
+  constructor(logger, stateManager, systemDetector, commandRunner, validator) {
+    this.logger = logger;
+    this.stateManager = stateManager;
+    this.systemDetector = systemDetector;
+    this.commandRunner = commandRunner;
+    this.validator = validator;
+    this.summary = { installed: [], skipped: [], failed: [] };
+  }
+
+  getName() {
+    return 'Zsh Setup';
+  }
+
+  getDescription() {
+    return 'Install and configure Zsh shell with Oh My Zsh and essential plugins';
+  }
+
+  isOptional() {
+    return false;
+  }
+
+  async run(options = {}) {
+    return this.execute(options);
   }
 
   async execute(customizations = {}) {
