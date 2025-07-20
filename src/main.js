@@ -179,8 +179,12 @@ export class VpsSetupOrchestrator {
   }
 
   async shouldSkipPhase(phase, options) {
-    // Check if phase is explicitly forced to run
-    if (options.forcePhases && options.forcePhases.includes(phase.getName())) {
+    // Normalize helper to compare identifiers flexibly (e.g. "zsh", "Zsh Setup")
+    const normalize = (s) => s.toLowerCase().replace(/[^a-z]/g, '');
+    const phaseKey = normalize(phase.getName());
+
+    // Check if phase is explicitly forced to run (substring/alias match)
+    if (options.forcePhases && options.forcePhases.map(normalize).some(k => phaseKey.includes(k))) {
       this.logger.info(`🔄 Forcing re-run of ${phase.getName()}`);
       return false;
     }
@@ -192,7 +196,7 @@ export class VpsSetupOrchestrator {
     }
     
     // Check if phase is explicitly disabled
-    if (options.skipPhases && options.skipPhases.includes(phase.getName())) {
+    if (options.skipPhases && options.skipPhases.map(normalize).some(k => phaseKey.includes(k))) {
       return true;
     }
     
