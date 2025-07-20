@@ -8,4 +8,4 @@ export { Validator } from './validation.js';
 export { ErrorHandler } from './error-handler.js';
 
 // Export utility functions
-export * as Utils from './utils.js'; 
+export { Utils } from './utils.js'; 

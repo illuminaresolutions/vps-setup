@@ -283,7 +283,12 @@ source $ZSH/oh-my-zsh.sh
 
   async getCurrentShell() {
     try {
-      const result = await this.commandRunner.run('echo', ['$SHELL']);
+      // Prefer environment variable to avoid literal "$SHELL" when executed without a shell
+      if (process.env.SHELL) {
+        return process.env.SHELL;
+      }
+      // Fallback to spawning a login shell to query $SHELL
+      const result = await this.commandRunner.run('sh', ['-c', 'echo $SHELL']);
       return result.stdout.trim();
     } catch (error) {
       return null;
