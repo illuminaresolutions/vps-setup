@@ -1,4 +1,6 @@
 import { StateManager, SystemDetector, Logger, CommandRunner, Validator } from '../utils/index.js';
+import fs from 'fs-extra';
+import { ZshConfigGenerator } from '../templates/zsh-config.js';
 
 export class ZshPhase {
   constructor(logger, stateManager, systemDetector, commandRunner, validator) {
@@ -29,9 +31,7 @@ export class ZshPhase {
   async execute(customizations = {}) {
     // Show highly visible phase header
     this.logger.phaseHeader(1, 5, 'Essential Tools');
-    // Detailed description
     this.logger.info('ℹ Description: Installs Zsh shell, Oh My Zsh, zsh-autosuggestions, zsh-syntax-highlighting, and sets Zsh as the default shell if requested.');
-    // Prompt user to continue
     const inquirer = (await import('inquirer')).default;
     const { proceed } = await inquirer.prompt([
       {
@@ -55,12 +55,41 @@ export class ZshPhase {
       process.exit(1);
     }
 
-    
     try {
-      // Check if Zsh is already installed
+      // Check if Zsh is installed
       const isInstalled = await this.systemDetector.checkCommandExists('zsh');
+      let isDefaultShell = false;
+      let currentShell = '';
       if (isInstalled) {
-        this.logger.success('Zsh is already installed');
+        currentShell = await this.getCurrentShell();
+        isDefaultShell = currentShell && currentShell.includes('zsh');
+      }
+
+      if (isInstalled && isDefaultShell) {
+        this.logger.success('Zsh is already installed and set as your default shell.');
+        // Check .zshrc presence after confirming shell
+        await this.ensureZshrc();
+        this.summary.skipped.push('Zsh');
+        this.stateManager.setPhaseStatus('zsh', { installed: true });
+        return { success: true, skipped: true };
+      }
+
+      if (isInstalled && !isDefaultShell) {
+        this.logger.warning(`Zsh is installed but your default shell is ${currentShell}.`);
+        const { setDefault } = await inquirer.prompt([
+          {
+            type: 'confirm',
+            name: 'setDefault',
+            message: 'Would you like to set Zsh as your default shell now?',
+            default: true
+          }
+        ]);
+        if (setDefault) {
+          await this.setAsDefaultShell();
+        } else {
+          this.logger.info('Zsh will not be set as default. You can do this later with: chsh -s $(which zsh)');
+        }
+        await this.ensureZshrc();
         this.summary.skipped.push('Zsh');
         this.stateManager.setPhaseStatus('zsh', { installed: true });
         return { success: true, skipped: true };
@@ -71,29 +100,31 @@ export class ZshPhase {
 
       // Install Zsh
       const spinner = this.logger.startSpinner('Installing Zsh...');
-      
       try {
-        // Update package list
         await this.commandRunner.updatePackageList();
-        
-        // Install Zsh
         await this.commandRunner.installPackage('zsh');
-        
-        // Verify installation
         const verification = await this.verifyInstallation();
         if (!verification.success) {
           throw new Error(verification.error);
         }
-
         this.logger.stopSpinner(true, 'Zsh installed successfully');
         this.summary.installed.push('Zsh');
         this.stateManager.setPhaseStatus('zsh', { installed: true });
-
-        // Set Zsh as default shell if requested
-        if (customizations.setAsDefault !== false) {
+        // Set as default shell
+        const { setDefault } = await inquirer.prompt([
+          {
+            type: 'confirm',
+            name: 'setDefault',
+            message: 'Would you like to set Zsh as your default shell now?',
+            default: true
+          }
+        ]);
+        if (setDefault) {
           await this.setAsDefaultShell();
+        } else {
+          this.logger.info('Zsh will not be set as default. You can do this later with: chsh -s $(which zsh)');
         }
-
+        await this.ensureZshrc();
         // Output verification commands and reminder
         this.logger.info('\nVerification commands:');
         this.logger.info('- zsh --version');
@@ -102,17 +133,45 @@ export class ZshPhase {
         this.logger.info('- [ -d ~/.zsh/zsh-syntax-highlighting ] && echo "zsh-syntax-highlighting installed"');
         this.logger.info('\nSingle-string test:');
         this.logger.info('zsh --version && [ -d ~/.oh-my-zsh ] && [ -d ~/.zsh/zsh-autosuggestions ] && [ -d ~/.zsh/zsh-syntax-highlighting ] && echo "All Zsh components installed"');
-        this.logger.info('\n[33mReminder: After installation, run \u001b[1msource ~/.zshrc\u001b[0m to apply your new shell configuration.');
+        this.logger.info('\n\u001b[33mReminder: After installation, run \u001b[1msource ~/.zshrc\u001b[0m to apply your new shell configuration.');
+        this.logger.info('You may need to log out and log back in for the shell change to take effect.');
         return { success: true, installed: true };
-
       } catch (error) {
         this.logger.stopSpinner(false, 'Zsh installation failed');
         throw error;
       }
-
     } catch (error) {
       this.logger.error(`Zsh phase failed: ${error.message}`);
       return { success: false, error: error.message };
+    }
+  }
+
+  // Ensures ~/.zshrc exists, creates a minimal one if missing
+  async ensureZshrc() {
+    try {
+      const home = process.env.HOME || process.env.USERPROFILE;
+      if (!home) {
+        this.logger.warning('Could not determine home directory to check/create ~/.zshrc');
+        return;
+      }
+      const zshrcPath = `${home}/.zshrc`;
+      const exists = await fs.pathExists(zshrcPath);
+      if (exists) {
+        this.logger.success('.zshrc file already present');
+        return;
+      }
+      // Try to use ZshConfigGenerator if available
+      let configContent = '';
+      try {
+        const generator = new ZshConfigGenerator();
+        configContent = generator.generateSampleConfig ? generator.generateSampleConfig() : generator.generateConfig();
+      } catch (e) {
+        configContent = '# Minimal .zshrc\nexport ZSH=\"$HOME/.oh-my-zsh\"\nZSH_THEME=\"robbyrussell\"\nplugins=(git)\nsource $ZSH/oh-my-zsh.sh\n';
+      }
+      await fs.writeFile(zshrcPath, configContent, { mode: 0o644 });
+      this.logger.success('.zshrc file created');
+    } catch (err) {
+      this.logger.warning(`Could not create ~/.zshrc: ${err.message}`);
     }
   }
 
