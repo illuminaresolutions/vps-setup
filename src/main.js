@@ -120,8 +120,7 @@ export class VpsSetupOrchestrator {
       const phase = this.phases[i];
       this.currentPhaseIndex = i;
       
-      this.logger.info(`\n📦 Phase ${i + 1}/${totalPhases}: ${phase.getName()}`);
-      this.logger.info(`Description: ${phase.getDescription()}`);
+      // Phase header and description are handled by each phase for better formatting
       
       try {
         // Check if phase should be skipped

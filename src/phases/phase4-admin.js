@@ -26,7 +26,8 @@ export class AdminPhase {
   }
 
   async execute(customizations = {}) {
-    // Detailed description
+    // Show highly visible phase header
+    this.logger.phaseHeader(4, 5, 'Admin Tools');
     this.logger.info('ℹ Description: Installs and configures system administration tools: htop (process monitor), ncdu (disk usage analyzer), ufw (firewall), fail2ban (intrusion prevention), tmux (terminal multiplexer), logrotate (log management).');
     // Prompt user to continue
     const inquirer = (await import('inquirer')).default;

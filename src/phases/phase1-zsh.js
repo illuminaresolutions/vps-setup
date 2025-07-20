@@ -29,7 +29,8 @@ export class ZshPhase {
   }
 
   async execute(customizations = {}) {
-    // Detailed description
+    // Show highly visible phase header
+    this.logger.phaseHeader(1, 5, 'Zsh Setup');
     this.logger.info('ℹ Description: Installs Zsh shell, Oh My Zsh, zsh-autosuggestions, zsh-syntax-highlighting, and sets Zsh as the default shell if requested.');
     const inquirer = (await import('inquirer')).default;
     const { proceed } = await inquirer.prompt([

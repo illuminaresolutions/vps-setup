@@ -26,7 +26,8 @@ export class ToolsPhase {
   }
 
   async execute(customizations = {}) {
-    // Detailed description
+    // Show highly visible phase header
+    this.logger.phaseHeader(2, 5, 'Essential Tools');
     this.logger.info('ℹ Description: Installs Micro editor (modern terminal text editor), Git (distributed version control), and Zsh plugins (zsh-autosuggestions, zsh-syntax-highlighting).');
     // Prompt user to continue
     const inquirer = (await import('inquirer')).default;
