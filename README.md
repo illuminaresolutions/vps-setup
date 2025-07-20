@@ -18,6 +18,7 @@ A comprehensive, interactive VPS provisioning script that transforms a fresh Ubu
 - Oh My Zsh framework
 - Essential Zsh plugins (autosuggestions, syntax highlighting)
 - Custom prompt and aliases
+- **Smart .zshrc management**: Preserves existing nvm configuration from setup_node.sh
 
 ### Phase 2: Essential Tools
 - **Micro Editor**: Modern, intuitive text editor
@@ -76,6 +77,7 @@ A comprehensive, interactive VPS provisioning script that transforms a fresh Ubu
    - Source nvm for immediate use
    - Install Node.js v22 (latest LTS)
    - Print and verify node and npm versions
+   - **Automatically configure your shell profile** (`.zshrc` for zsh, `.bashrc` for bash) with nvm settings
    - Pause between steps so you can observe the process
 
    _You can review or customize the script in `setup_node.sh` before running if desired._
@@ -148,6 +150,27 @@ If you already have Node.js installed, you can skip to step 3:
    ```
 
 ## 🎯 Usage
+
+### Execution Order & Configuration Management
+
+The setup process follows this order to ensure proper configuration:
+
+1. **setup_node.sh** (run first):
+   - Installs nvm, Node.js, and npm
+   - **Automatically configures your shell profile** with nvm settings
+   - Detects your shell (zsh/bash) and adds configuration to the correct profile file
+
+2. **VPS Setup Script** (run second):
+   - Phase 1 installs Zsh and Oh My Zsh
+   - **Smart .zshrc management**: Preserves existing nvm configuration
+   - Merges configurations intelligently (nvm + Oh My Zsh)
+   - Ensures both nvm and Oh My Zsh work together seamlessly
+
+This order ensures that:
+- Node.js/npm are available for the VPS setup script
+- nvm configuration is preserved when Zsh is configured
+- Both nvm and Oh My Zsh configurations coexist in `.zshrc`
+- No configuration conflicts or overwrites occur
 
 ### Basic Usage
 
@@ -263,6 +286,27 @@ source ~/.bashrc  # or source ~/.zshrc
 nvm install --lts
 nvm use --lts
 ```
+
+#### Zsh + nvm Configuration Issues
+If you're having issues with node/npm in zsh after running both scripts:
+
+```bash
+# Check if nvm is configured in .zshrc
+grep -n "nvm" ~/.zshrc
+
+# Check if Oh My Zsh is configured
+grep -n "ZSH=" ~/.zshrc
+
+# Manually source .zshrc
+source ~/.zshrc
+
+# Verify nvm works
+nvm --version
+node --version
+npm --version
+```
+
+**Common Issue**: If you ran the VPS setup script before `setup_node.sh`, the nvm configuration might be missing. Run `setup_node.sh` again to add nvm configuration to your `.zshrc`.
 
 #### Package Installation Failures
 ```bash

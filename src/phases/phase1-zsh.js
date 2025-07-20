@@ -146,7 +146,7 @@ export class ZshPhase {
     }
   }
 
-  // Ensures ~/.zshrc exists, creates a minimal one if missing
+  // Ensures ~/.zshrc exists with both nvm and Oh My Zsh configurations
   async ensureZshrc() {
     try {
       const home = process.env.HOME || process.env.USERPROFILE;
@@ -156,22 +156,76 @@ export class ZshPhase {
       }
       const zshrcPath = `${home}/.zshrc`;
       const exists = await fs.pathExists(zshrcPath);
+      
+      let currentContent = '';
+      let hasNvmConfig = false;
+      let hasOhMyZshConfig = false;
+      
       if (exists) {
-        this.logger.success('.zshrc file already present');
-        return;
+        this.logger.info('Reading existing .zshrc file...');
+        currentContent = await fs.readFile(zshrcPath, 'utf8');
+        hasNvmConfig = currentContent.includes('NVM_DIR') || currentContent.includes('nvm.sh');
+        hasOhMyZshConfig = currentContent.includes('ZSH=') || currentContent.includes('oh-my-zsh');
+        
+        this.logger.info(`Existing .zshrc - NVM config: ${hasNvmConfig ? 'present' : 'missing'}, Oh My Zsh config: ${hasOhMyZshConfig ? 'present' : 'missing'}`);
       }
-      // Try to use ZshConfigGenerator if available
-      let configContent = '';
+      
+      // Prepare configurations to add
+      const nvmConfig = `# NVM Configuration
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \\. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \\. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+`;
+      
+      let ohMyZshConfig = '';
       try {
         const generator = new ZshConfigGenerator();
-        configContent = generator.generateSampleConfig ? generator.generateSampleConfig() : generator.generateConfig();
+        ohMyZshConfig = generator.generateSampleConfig ? generator.generateSampleConfig() : generator.generateConfig();
       } catch (e) {
-        configContent = '# Minimal .zshrc\nexport ZSH=\"$HOME/.oh-my-zsh\"\nZSH_THEME=\"robbyrussell\"\nplugins=(git)\nsource $ZSH/oh-my-zsh.sh\n';
+        ohMyZshConfig = `# Oh My Zsh Configuration
+export ZSH="$HOME/.oh-my-zsh"
+ZSH_THEME="robbyrussell"
+plugins=(git)
+source $ZSH/oh-my-zsh.sh
+
+`;
       }
-      await fs.writeFile(zshrcPath, configContent, { mode: 0o644 });
-      this.logger.success('.zshrc file created');
+      
+      let newContent = '';
+      let modified = false;
+      
+      if (!exists) {
+        // Create new .zshrc with both configurations
+        this.logger.info('Creating new .zshrc with NVM and Oh My Zsh configurations');
+        newContent = nvmConfig + ohMyZshConfig;
+        modified = true;
+      } else {
+        // Merge existing content with missing configurations
+        newContent = currentContent;
+        
+        if (!hasNvmConfig) {
+          this.logger.info('Adding NVM configuration to existing .zshrc');
+          newContent = nvmConfig + newContent;
+          modified = true;
+        }
+        
+        if (!hasOhMyZshConfig) {
+          this.logger.info('Adding Oh My Zsh configuration to existing .zshrc');
+          newContent = newContent + '\n' + ohMyZshConfig;
+          modified = true;
+        }
+      }
+      
+      if (modified) {
+        await fs.writeFile(zshrcPath, newContent, { mode: 0o644 });
+        this.logger.success('.zshrc file updated with required configurations');
+      } else {
+        this.logger.success('.zshrc file already contains all required configurations');
+      }
+      
     } catch (err) {
-      this.logger.warning(`Could not create ~/.zshrc: ${err.message}`);
+      this.logger.warning(`Could not manage ~/.zshrc: ${err.message}`);
     }
   }
 
