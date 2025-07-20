@@ -29,7 +29,34 @@ export class ConfigPhase {
   }
 
   async execute(customizations = {}) {
-    this.logger.section('Phase 3: Configuration Setup');
+    // Show highly visible phase header
+    this.logger.phaseHeader(3, 5, 'Configuration');
+    // Detailed description
+    this.logger.info('ℹ Description: Generates and applies configuration files for Micro editor and Zsh, customizing settings and themes.');
+    // Prompt user to continue
+    const inquirer = (await import('inquirer')).default;
+    const { proceed } = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'proceed',
+        message: 'Continue? (yes/skip/abort)',
+        choices: [
+          { name: 'Yes, run this phase', value: 'yes' },
+          { name: 'Skip this phase', value: 'skip' },
+          { name: 'Abort setup', value: 'abort' }
+        ],
+        default: 'yes'
+      }
+    ]);
+    if (proceed === 'skip') {
+      this.logger.warning('Phase skipped by user.');
+      this.stateManager.setPhaseStatus('config', { skipped: true });
+      return { success: true, skipped: true };
+    } else if (proceed === 'abort') {
+      this.logger.error('Setup aborted by user.');
+      process.exit(1);
+    }
+
     
     const results = {
       micro: { success: false, configured: false },
@@ -50,6 +77,13 @@ export class ConfigPhase {
       // Update state
       this.stateManager.setPhaseStatus('config', { configured: true });
 
+      // Output verification commands
+      this.logger.info('\nVerification commands:');
+      this.logger.info('- [ -f ~/.config/micro/settings.json ] && echo "Micro config present"');
+      this.logger.info('- [ -f ~/.zshrc ] && echo ".zshrc present"');
+      this.logger.info('\nSingle-string test:');
+      this.logger.info('[ -f ~/.config/micro/settings.json ] && [ -f ~/.zshrc ] && echo "All config files present"');
+      this.logger.info('\n\u001b[33mReminder: After changing your Zsh configuration, run \u001b[1msource ~/.zshrc\u001b[0m to apply your new shell configuration.');
       return { success: true, results };
 
     } catch (error) {

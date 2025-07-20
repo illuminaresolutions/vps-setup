@@ -53,9 +53,18 @@ export class Logger {
     }
   }
 
-  // Formatted sections
+  // Highly visible phase header
+  phaseHeader(phaseNum, totalPhases, phaseName) {
+    // Example: 📦 Phase 2/5: Essential Tools
+    const header = `📦 Phase ${phaseNum}/${totalPhases}: ${phaseName}`;
+    // Use a vibrant color combination for maximum visibility
+    console.log('\n' + chalk.magentaBright.bgYellow.bold(` ${header} `));
+  }
+
+  // Formatted sections (deprecated for phase headers)
   section(title) {
-    console.log('\n' + chalk.cyan.bold(`📋 ${title}`));
+    // Use only for sub-sections, not main phase headers
+    console.log('\n' + chalk.gray.bold(`📋 ${title}`));
     console.log(chalk.gray('─'.repeat(50)));
   }
 

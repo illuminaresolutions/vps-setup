@@ -26,7 +26,34 @@ export class OptionalPhase {
   }
 
   async execute(customizations = {}) {
-    this.logger.section('Phase 5: Optional Tools Installation');
+    // Show highly visible phase header
+    this.logger.phaseHeader(5, 5, 'Optional Tools');
+    // Detailed description
+    this.logger.info('ℹ Description: Installs optional development and utility tools: bat (better cat), curl (HTTP client), wget (web downloader), zip/unzip (archive utilities), jq (JSON processor), tree (directory tree viewer).');
+    // Prompt user to continue
+    const inquirer = (await import('inquirer')).default;
+    const { proceed } = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'proceed',
+        message: 'Continue? (yes/skip/abort)',
+        choices: [
+          { name: 'Yes, run this phase', value: 'yes' },
+          { name: 'Skip this phase', value: 'skip' },
+          { name: 'Abort setup', value: 'abort' }
+        ],
+        default: 'yes'
+      }
+    ]);
+    if (proceed === 'skip') {
+      this.logger.warning('Phase skipped by user.');
+      this.stateManager.setPhaseStatus('optional', { skipped: true });
+      return { success: true, skipped: true };
+    } else if (proceed === 'abort') {
+      this.logger.error('Setup aborted by user.');
+      process.exit(1);
+    }
+
     
     const results = {
       installed: [],
@@ -54,6 +81,17 @@ export class OptionalPhase {
       // Update state
       this.stateManager.setPhaseStatus('optional', { installed: true });
 
+      // Output verification commands
+      this.logger.info('\nVerification commands:');
+      this.logger.info('- bat --version || batcat --version');
+      this.logger.info('- curl --version');
+      this.logger.info('- wget --version');
+      this.logger.info('- zip --version');
+      this.logger.info('- unzip --version');
+      this.logger.info('- jq --version');
+      this.logger.info('- tree --version');
+      this.logger.info('\nSingle-string test:');
+      this.logger.info('(bat --version || batcat --version) && curl --version && wget --version && zip --version && unzip --version && jq --version && tree --version && echo "All optional tools installed"');
       return { success: true, results };
 
     } catch (error) {

@@ -27,7 +27,34 @@ export class ZshPhase {
   }
 
   async execute(customizations = {}) {
-    this.logger.section('Phase 1: Zsh Setup');
+    // Show highly visible phase header
+    this.logger.phaseHeader(1, 5, 'Essential Tools');
+    // Detailed description
+    this.logger.info('ℹ Description: Installs Zsh shell, Oh My Zsh, zsh-autosuggestions, zsh-syntax-highlighting, and sets Zsh as the default shell if requested.');
+    // Prompt user to continue
+    const inquirer = (await import('inquirer')).default;
+    const { proceed } = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'proceed',
+        message: 'Continue? (yes/skip/abort)',
+        choices: [
+          { name: 'Yes, run this phase', value: 'yes' },
+          { name: 'Skip this phase', value: 'skip' },
+          { name: 'Abort setup', value: 'abort' }
+        ],
+        default: 'yes'
+      }
+    ]);
+    if (proceed === 'skip') {
+      this.logger.warning('Phase skipped by user.');
+      this.stateManager.setPhaseStatus('zsh', { skipped: true });
+      return { success: true, skipped: true };
+    } else if (proceed === 'abort') {
+      this.logger.error('Setup aborted by user.');
+      process.exit(1);
+    }
+
     
     try {
       // Check if Zsh is already installed
@@ -67,6 +94,15 @@ export class ZshPhase {
           await this.setAsDefaultShell();
         }
 
+        // Output verification commands and reminder
+        this.logger.info('\nVerification commands:');
+        this.logger.info('- zsh --version');
+        this.logger.info('- [ -d ~/.oh-my-zsh ] && echo "Oh My Zsh installed"');
+        this.logger.info('- [ -d ~/.zsh/zsh-autosuggestions ] && echo "zsh-autosuggestions installed"');
+        this.logger.info('- [ -d ~/.zsh/zsh-syntax-highlighting ] && echo "zsh-syntax-highlighting installed"');
+        this.logger.info('\nSingle-string test:');
+        this.logger.info('zsh --version && [ -d ~/.oh-my-zsh ] && [ -d ~/.zsh/zsh-autosuggestions ] && [ -d ~/.zsh/zsh-syntax-highlighting ] && echo "All Zsh components installed"');
+        this.logger.info('\n[33mReminder: After installation, run \u001b[1msource ~/.zshrc\u001b[0m to apply your new shell configuration.');
         return { success: true, installed: true };
 
       } catch (error) {

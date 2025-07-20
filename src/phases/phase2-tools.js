@@ -26,7 +26,34 @@ export class ToolsPhase {
   }
 
   async execute(customizations = {}) {
-    this.logger.section('Phase 2: Basic Tools Installation');
+    // Show highly visible phase header
+    this.logger.phaseHeader(2, 5, 'Essential Tools');
+    // Detailed description
+    this.logger.info('ℹ Description: Installs Micro editor (modern terminal text editor), Git (distributed version control), and Zsh plugins (zsh-autosuggestions, zsh-syntax-highlighting).');
+    // Prompt user to continue
+    const inquirer = (await import('inquirer')).default;
+    const { proceed } = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'proceed',
+        message: 'Continue? (yes/skip/abort)',
+        choices: [
+          { name: 'Yes, run this phase', value: 'yes' },
+          { name: 'Skip this phase', value: 'skip' },
+          { name: 'Abort setup', value: 'abort' }
+        ],
+        default: 'yes'
+      }
+    ]);
+    if (proceed === 'skip') {
+      this.logger.warning('Phase skipped by user.');
+      this.stateManager.setPhaseStatus('tools', { skipped: true });
+      return { success: true, skipped: true };
+    } else if (proceed === 'abort') {
+      this.logger.error('Setup aborted by user.');
+      process.exit(1);
+    }
+
     
     const results = {
       installed: [],
@@ -48,6 +75,14 @@ export class ToolsPhase {
       // Update state
       this.stateManager.setPhaseStatus('tools', { installed: true });
 
+      // Output verification commands
+      this.logger.info('\nVerification commands:');
+      this.logger.info('- micro --version');
+      this.logger.info('- git --version');
+      this.logger.info('- [ -d ~/.zsh/zsh-autosuggestions ] && echo "zsh-autosuggestions installed"');
+      this.logger.info('- [ -d ~/.zsh/zsh-syntax-highlighting ] && echo "zsh-syntax-highlighting installed"');
+      this.logger.info('\nSingle-string test:');
+      this.logger.info('micro --version && git --version && [ -d ~/.zsh/zsh-autosuggestions ] && [ -d ~/.zsh/zsh-syntax-highlighting ] && echo "All essential tools installed"');
       return { success: true, results };
 
     } catch (error) {

@@ -50,3 +50,14 @@ nvm current
 npm -v
 
 info "Installation completed successfully!"
+
+info "Smart reminder to source the correct shell profile for NVM/Node"
+if [ -f "$HOME/.bashrc" ]; then
+  PROFILE_FILE="$HOME/.bashrc"
+elif [ -f "$HOME/.profile" ]; then
+  PROFILE_FILE="$HOME/.profile"
+else
+  PROFILE_FILE="your shell profile"
+fi
+
+echo "==> Please run 'source $PROFILE_FILE' or open a new terminal to use Node.js and npm."

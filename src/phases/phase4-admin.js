@@ -26,7 +26,34 @@ export class AdminPhase {
   }
 
   async execute(customizations = {}) {
-    this.logger.section('Phase 4: Admin Tools Installation');
+    // Show highly visible phase header
+    this.logger.phaseHeader(4, 5, 'Admin Tools');
+    // Detailed description
+    this.logger.info('ℹ Description: Installs and configures system administration tools: htop (process monitor), ncdu (disk usage analyzer), ufw (firewall), fail2ban (intrusion prevention), tmux (terminal multiplexer), logrotate (log management).');
+    // Prompt user to continue
+    const inquirer = (await import('inquirer')).default;
+    const { proceed } = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'proceed',
+        message: 'Continue? (yes/skip/abort)',
+        choices: [
+          { name: 'Yes, run this phase', value: 'yes' },
+          { name: 'Skip this phase', value: 'skip' },
+          { name: 'Abort setup', value: 'abort' }
+        ],
+        default: 'yes'
+      }
+    ]);
+    if (proceed === 'skip') {
+      this.logger.warning('Phase skipped by user.');
+      this.stateManager.setPhaseStatus('admin', { skipped: true });
+      return { success: true, skipped: true };
+    } else if (proceed === 'abort') {
+      this.logger.error('Setup aborted by user.');
+      process.exit(1);
+    }
+
     
     const results = {
       installed: [],
@@ -58,6 +85,16 @@ export class AdminPhase {
       // Update state
       this.stateManager.setPhaseStatus('admin', { installed: true });
 
+      // Output verification commands
+      this.logger.info('\nVerification commands:');
+      this.logger.info('- htop --version');
+      this.logger.info('- ncdu --version');
+      this.logger.info('- ufw status');
+      this.logger.info('- fail2ban-client status');
+      this.logger.info('- tmux -V');
+      this.logger.info('- logrotate --version');
+      this.logger.info('\nSingle-string test:');
+      this.logger.info('htop --version && ncdu --version && ufw status && fail2ban-client status && tmux -V && logrotate --version && echo "All admin tools installed/configured"');
       return { success: true, results };
 
     } catch (error) {
