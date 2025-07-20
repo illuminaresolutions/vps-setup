@@ -61,38 +61,86 @@ A comprehensive, interactive VPS provisioning script that transforms a fresh Ubu
 
 ### Quick Start (Recommended)
 
-1. **Clone the repository**:
+1. **Install Node.js** (required for fresh VPS):
+   ```bash
+   # Download and install nvm (Node Version Manager)
+   curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+
+   # Reload shell configuration (or restart your terminal)
+   source ~/.bashrc
+   # Or if using zsh: source ~/.zshrc
+
+   # Install Node.js LTS version
+   nvm install --lts
+
+   # Use the installed version
+   nvm use --lts
+   ```
+
+2. **Verify Node.js installation**:
+   ```bash
+   node --version  # Should show the LTS version
+   npm --version   # Should show the corresponding npm version
+   nvm current     # Should show the current Node.js version
+   ```
+
+3. **Clone the repository**:
    ```bash
    git clone https://github.com/illuminaresolutions/vps-setup.git
    cd vps-setup
    ```
 
-2. **Install dependencies**:
+4. **Install dependencies**:
    ```bash
    npm install
    ```
 
-3. **Run the setup script**:
+5. **Run the setup script**:
    ```bash
    npm start
    ```
 
-### Manual Installation
+### Alternative: One-Line Installation
 
-1. **Install Node.js** (if not already installed):
-   ```bash
-   # Ubuntu/Debian
-   curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-   sudo apt-get install -y nodejs
+For a completely automated setup from a fresh VPS:
 
-   # Or using snap
-   sudo snap install node --classic
-   ```
+```bash
+# Install nvm, Node.js, clone repo, and run setup in one command
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash && \
+export NVM_DIR="$HOME/.nvm" && \
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" && \
+nvm install --lts && \
+nvm use --lts && \
+git clone https://github.com/illuminaresolutions/vps-setup.git && \
+cd vps-setup && \
+npm install && \
+npm start
+```
 
-2. **Verify installation**:
+### Manual Installation (If Node.js is already installed)
+
+If you already have Node.js installed, you can skip to step 3:
+
+1. **Verify Node.js is installed**:
    ```bash
    node --version  # Should be 18.0.0 or higher
    npm --version   # Should be 8.0.0 or higher
+   ```
+
+2. **If not installed, install Node.js**:
+   ```bash
+   # Download and install nvm (Node Version Manager)
+   curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+
+   # Reload shell configuration
+   source ~/.bashrc
+   # Or if using zsh: source ~/.zshrc
+
+   # Install Node.js LTS version
+   nvm install --lts
+
+   # Use the installed version
+   nvm use --lts
    ```
 
 3. **Clone and setup**:
@@ -209,9 +257,14 @@ sudo apt update
 # Check Node.js version
 node --version
 
+# Check nvm installation
+nvm --version
+
 # Reinstall if needed
-curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-sudo apt-get install -y nodejs
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+source ~/.bashrc  # or source ~/.zshrc
+nvm install --lts
+nvm use --lts
 ```
 
 #### Package Installation Failures
