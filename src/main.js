@@ -61,6 +61,12 @@ export class VpsSetupOrchestrator {
       await this.generateFinalReport();
       
       this.logger.success('✅ VPS Setup completed successfully!');
+      this.logger.info('🔄 Finalizing setup...');
+      
+      // Ensure all async operations are complete
+      await this.stateManager.saveState();
+      
+      this.logger.info('✅ Setup finalized successfully');
       
     } catch (error) {
       await this.handleCriticalError(error);

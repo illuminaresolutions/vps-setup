@@ -61,7 +61,16 @@ Examples:
 }
 
 // Run the orchestrator
-orchestrator.run(options).catch(error => {
-  console.error('Fatal error:', error.message);
-  process.exit(1);
-}); 
+orchestrator.run(options)
+  .then(() => {
+    // Script completed successfully, return to prompt
+    console.log('\n🎉 Setup completed! You can now use your configured VPS.');
+    console.log('Returning to shell prompt...\n');
+    
+    // Ensure process exits cleanly
+    process.exit(0);
+  })
+  .catch(error => {
+    console.error('Fatal error:', error.message);
+    process.exit(1);
+  }); 
