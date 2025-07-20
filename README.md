@@ -63,7 +63,7 @@ A comprehensive, interactive VPS provisioning script that transforms a fresh Ubu
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/yourusername/vps-setup.git
+   git clone https://github.com/illuminaresolutions/vps-setup.git
    cd vps-setup
    ```
 
@@ -97,7 +97,7 @@ A comprehensive, interactive VPS provisioning script that transforms a fresh Ubu
 
 3. **Clone and setup**:
    ```bash
-   git clone https://github.com/yourusername/vps-setup.git
+   git clone https://github.com/illuminaresolutions/vps-setup.git
    cd vps-setup
    npm install
    ```
