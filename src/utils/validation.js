@@ -2,12 +2,14 @@ import fs from 'fs-extra';
 import { SystemDetector } from './system.js';
 import { CommandRunner } from './command.js';
 import { Logger } from './logger.js';
+import { Utils } from './utils.js';
 
 export class Validator {
   constructor() {
     this.systemDetector = new SystemDetector();
     this.commandRunner = new CommandRunner();
     this.logger = new Logger();
+    this.Utils = Utils;
   }
 
   async validateSystemRequirements() {

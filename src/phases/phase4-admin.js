@@ -85,8 +85,14 @@ export class AdminPhase {
           continue;
         }
 
-        // Check if already installed
-        const isInstalled = await this.systemDetector.checkCommandExists(tool);
+        // Check if already installed (handle special cases)
+        let isInstalled = false;
+        if (tool === 'fail2ban') {
+          isInstalled = await this.systemDetector.checkCommandExists('fail2ban-client');
+        } else {
+          isInstalled = await this.systemDetector.checkCommandExists(tool);
+        }
+
         if (isInstalled) {
           this.logger.success(`${info.description} already installed`);
           results.skipped.push(tool);
@@ -95,15 +101,23 @@ export class AdminPhase {
 
         // Install tool
         this.logger.info(`Installing ${info.description}...`);
-        await this.commandRunner.installPackage(info.package);
+        try {
+          await this.commandRunner.installPackage(info.package);
+          this.logger.info(`${info.description} package installation completed`);
+        } catch (error) {
+          this.logger.error(`Package installation failed for ${info.description}: ${error.message}`);
+          results.failed.push({ name: tool, error: `Package installation failed: ${error.message}` });
+          continue;
+        }
 
         // Verify installation
+        this.logger.info(`Verifying ${info.description} installation...`);
         const verification = await this.verifyToolInstallation(tool);
         if (verification.success) {
           this.logger.success(`${info.description} installed successfully`);
           results.installed.push(tool);
         } else {
-          this.logger.error(`${info.description} installation verification failed`);
+          this.logger.error(`${info.description} installation verification failed: ${verification.error}`);
           results.failed.push({ name: tool, error: verification.error });
         }
 
@@ -248,8 +262,9 @@ set -g status-right-length 50
       // Backup existing config
       await this.validator.Utils.backupFile(configFile);
       
-      // Write new config
-      await this.validator.Utils.fs.writeFile(expandedPath, tmuxConfig, 'utf8');
+      // Write new config using fs-extra
+      const fs = await import('fs-extra');
+      await fs.writeFile(expandedPath, tmuxConfig, 'utf8');
       
       this.logger.success('Tmux configured successfully');
       results.configured.push('tmux');
@@ -281,15 +296,55 @@ set -g status-right-length 50
 
   async verifyToolInstallation(tool) {
     try {
+      // Handle special cases for command names
+      const commandMap = {
+        'fail2ban': 'fail2ban-client',
+        'ufw': 'ufw',
+        'htop': 'htop',
+        'ncdu': 'ncdu',
+        'tmux': 'tmux',
+        'logrotate': 'logrotate'
+      };
+
+      const command = commandMap[tool] || tool;
+      
       // Check if command exists
-      const exists = await this.systemDetector.checkCommandExists(tool);
+      const exists = await this.systemDetector.checkCommandExists(command);
       if (!exists) {
-        return { success: false, error: 'Command not found after installation' };
+        return { success: false, error: `Command '${command}' not found after installation` };
       }
 
       // Get version info
-      const version = await this.commandRunner.getCommandVersion(tool);
+      const version = await this.commandRunner.getCommandVersion(command);
       this.logger.info(`${tool} version: ${version}`);
+
+      // Additional verification for specific tools
+      if (tool === 'fail2ban') {
+        // Check if fail2ban service can be controlled
+        try {
+          // Wait a moment for the service to be ready
+          await this.commandRunner.sleep(2000);
+          
+          const result = await this.commandRunner.runSudo('fail2ban-client', ['ping']);
+          if (result.success && result.stdout.includes('pong')) {
+            this.logger.info('Fail2ban service is responsive');
+          } else {
+            // Try to start the service if it's not responding
+            this.logger.info('Attempting to start fail2ban service...');
+            await this.commandRunner.runSudo('systemctl', ['start', 'fail2ban']);
+            await this.commandRunner.sleep(3000);
+            
+            const retryResult = await this.commandRunner.runSudo('fail2ban-client', ['ping']);
+            if (retryResult.success && retryResult.stdout.includes('pong')) {
+              this.logger.info('Fail2ban service started and is responsive');
+            } else {
+              return { success: false, error: 'Fail2ban service is not responsive after startup attempt' };
+            }
+          }
+        } catch (error) {
+          return { success: false, error: `Fail2ban service verification failed: ${error.message}` };
+        }
+      }
 
       return { success: true, version };
     } catch (error) {

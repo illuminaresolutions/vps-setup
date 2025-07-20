@@ -154,15 +154,16 @@ export class OptionalPhase {
       // Add alias to .bashrc and .zshrc
       const aliasLine = 'alias bat="batcat"';
       const files = ['~/.bashrc', '~/.zshrc'];
+      const fs = await import('fs-extra');
 
       for (const file of files) {
         const expandedPath = this.validator.Utils.expandTilde(file);
-        const exists = await this.validator.Utils.fs.pathExists(expandedPath);
+        const exists = await fs.pathExists(expandedPath);
         
         if (exists) {
-          const content = await this.validator.Utils.fs.readFile(expandedPath, 'utf8');
+          const content = await fs.readFile(expandedPath, 'utf8');
           if (!content.includes(aliasLine)) {
-            await this.validator.Utils.fs.appendFile(expandedPath, `\n${aliasLine}\n`);
+            await fs.appendFile(expandedPath, `\n${aliasLine}\n`);
             this.logger.info(`Added bat alias to ${file}`);
           }
         }

@@ -138,11 +138,12 @@ export class ConfigPhase {
       this.logger.info(`Backed up existing configuration to: ${backupPath}`);
     }
 
-    // Write new configuration
+    // Write new configuration using fs-extra
+    const fs = await import('fs-extra');
     if (typeof content === 'object') {
-      await this.validator.Utils.fs.writeJson(expandedPath, content, { spaces: 2 });
+      await fs.writeJson(expandedPath, content, { spaces: 2 });
     } else {
-      await this.validator.Utils.fs.writeFile(expandedPath, content, 'utf8');
+      await fs.writeFile(expandedPath, content, 'utf8');
     }
 
     this.logger.info(`Configuration written to: ${expandedPath}`);
@@ -164,6 +165,7 @@ export class ConfigPhase {
 
   async getCurrentConfigurations() {
     const configs = {};
+    const fs = await import('fs-extra');
 
     // Get Micro configuration
     const microConfigFile = '~/.config/micro/settings.json';
@@ -171,7 +173,7 @@ export class ConfigPhase {
     if (microValidation.exists && microValidation.readable) {
       try {
         const expandedPath = this.validator.Utils.expandTilde(microConfigFile);
-        configs.micro = await this.validator.Utils.fs.readJson(expandedPath);
+        configs.micro = await fs.readJson(expandedPath);
       } catch (error) {
         configs.micro = { error: 'Could not read Micro configuration' };
       }
@@ -183,7 +185,7 @@ export class ConfigPhase {
     if (zshValidation.exists && zshValidation.readable) {
       try {
         const expandedPath = this.validator.Utils.expandTilde(zshrcFile);
-        configs.zsh = await this.validator.Utils.fs.readFile(expandedPath, 'utf8');
+        configs.zsh = await fs.readFile(expandedPath, 'utf8');
       } catch (error) {
         configs.zsh = { error: 'Could not read Zsh configuration' };
       }
