@@ -26,8 +26,6 @@ export class OptionalPhase {
   }
 
   async execute(customizations = {}) {
-    // Show highly visible phase header
-    this.logger.phaseHeader(5, 5, 'Optional Tools');
     // Detailed description
     this.logger.info('ℹ Description: Installs optional development and utility tools: bat (better cat), curl (HTTP client), wget (web downloader), zip/unzip (archive utilities), jq (JSON processor), tree (directory tree viewer).');
     // Prompt user to continue

@@ -29,8 +29,6 @@ export class ConfigPhase {
   }
 
   async execute(customizations = {}) {
-    // Show highly visible phase header
-    this.logger.phaseHeader(3, 5, 'Configuration');
     // Detailed description
     this.logger.info('ℹ Description: Generates and applies configuration files for Micro editor and Zsh, customizing settings and themes.');
     // Prompt user to continue
