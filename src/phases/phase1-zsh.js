@@ -1,4 +1,4 @@
-import { StateManager, SystemDetector, Logger, CommandRunner, Validator } from '../utils/index.js';
+import { StateManager, SystemDetector, Logger, CommandRunner, Validator, Utils } from '../utils/index.js';
 import fs from 'fs-extra';
 import { ZshConfigGenerator } from '../templates/zsh-config.js';
 
@@ -9,6 +9,7 @@ export class ZshPhase {
     this.systemDetector = systemDetector;
     this.commandRunner = commandRunner;
     this.validator = validator;
+    this.Utils = Utils;
     this.summary = { installed: [], skipped: [], failed: [] };
   }
 
@@ -291,8 +292,8 @@ source $ZSH/oh-my-zsh.sh
 
   async checkZshPlugins() {
     const plugins = [
-      { name: 'zsh-autosuggestions', path: '~/.zsh/zsh-autosuggestions' },
-      { name: 'zsh-syntax-highlighting', path: '~/.zsh/zsh-syntax-highlighting' }
+      { name: 'zsh-autosuggestions', path: this.Utils.expandTilde('~/.zsh/zsh-autosuggestions') },
+      { name: 'zsh-syntax-highlighting', path: this.Utils.expandTilde('~/.zsh/zsh-syntax-highlighting') }
     ];
 
     const installed = [];

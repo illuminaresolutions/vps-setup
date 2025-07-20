@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { StateManager, SystemDetector, Logger, Prompts, CommandRunner } from './utils/index.js';
+import { StateManager, SystemDetector, Logger, Prompts, CommandRunner, Utils } from './utils/index.js';
 
 class VPSSetup {
   constructor() {
@@ -9,6 +9,7 @@ class VPSSetup {
     this.logger = new Logger();
     this.prompts = new Prompts();
     this.commandRunner = new CommandRunner();
+    this.Utils = Utils;
     this.summary = {
       installed: [],
       configured: [],
@@ -250,7 +251,7 @@ class VPSSetup {
     ];
 
     for (const plugin of plugins) {
-      const pluginPath = `~/.zsh/${plugin.name}`;
+      const pluginPath = this.Utils.expandTilde(`~/.zsh/${plugin.name}`);
       const exists = await this.systemDetector.checkFileExists(pluginPath);
       
       if (!exists) {

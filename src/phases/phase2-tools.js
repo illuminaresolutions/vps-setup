@@ -1,4 +1,4 @@
-import { StateManager, SystemDetector, Logger, CommandRunner, Validator } from '../utils/index.js';
+import { StateManager, SystemDetector, Logger, CommandRunner, Validator, Utils } from '../utils/index.js';
 
 export class ToolsPhase {
   constructor(logger, stateManager, systemDetector, commandRunner, validator) {
@@ -7,6 +7,7 @@ export class ToolsPhase {
     this.systemDetector = systemDetector;
     this.commandRunner = commandRunner;
     this.validator = validator;
+    this.Utils = Utils;
   }
 
   getName() {
@@ -152,7 +153,7 @@ export class ToolsPhase {
     ];
 
     // Ensure .zsh directory exists
-    const zshDir = '~/.zsh';
+    const zshDir = this.Utils.expandTilde('~/.zsh');
     await this.validator.validateDirectory(zshDir, true);
 
     for (const plugin of plugins) {
@@ -209,7 +210,7 @@ export class ToolsPhase {
       this.logger.info('Configuring Micro editor...');
       
       // Create config directory
-      const configDir = '~/.config/micro';
+      const configDir = this.Utils.expandTilde('~/.config/micro');
       await this.validator.validateDirectory(configDir, true);
 
       // Check if settings file exists
@@ -257,8 +258,8 @@ export class ToolsPhase {
 
   async getPluginStatus() {
     const plugins = [
-      { name: 'zsh-autosuggestions', path: '~/.zsh/zsh-autosuggestions' },
-      { name: 'zsh-syntax-highlighting', path: '~/.zsh/zsh-syntax-highlighting' }
+      { name: 'zsh-autosuggestions', path: this.Utils.expandTilde('~/.zsh/zsh-autosuggestions') },
+      { name: 'zsh-syntax-highlighting', path: this.Utils.expandTilde('~/.zsh/zsh-syntax-highlighting') }
     ];
 
     const status = {};
