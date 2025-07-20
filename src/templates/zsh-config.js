@@ -131,7 +131,8 @@ bindkey '^[[B' history-beginning-search-forward
       'll': 'alias ll="ls -la"',
       'cd': 'alias ..="cd .."',
       'git': 'alias g="git"',
-      'docker': 'alias d="docker"'
+      'docker': 'alias d="docker"',
+      'ez': 'alias ez="micro ~/.zshrc"'
     };
 
     for (const alias of aliases) {
