@@ -36,6 +36,12 @@ export class VpsSetupOrchestrator {
     
     try {
       this.logger.info('🚀 Starting VPS Setup Script');
+
+      // Enable verbose output for command execution if requested
+      if (options.verbose) {
+        this.commandRunner.setVerbose(true);
+        this.logger.info('Verbose output enabled');
+      }
       this.logger.info(`Version: ${this.getVersion()}`);
       
       // Pre-flight checks

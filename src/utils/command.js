@@ -3,9 +3,14 @@ import { Logger } from './logger.js';
 import { ErrorHandler } from './error-handler.js';
 
 export class CommandRunner {
-  constructor() {
+  constructor(verbose = false) {
     this.logger = new Logger();
     this.errorHandler = new ErrorHandler(this.logger);
+    this.verbose = verbose;
+  }
+
+  setVerbose(value = true) {
+    this.verbose = value;
   }
 
   async run(command, args = [], options = {}) {
@@ -17,12 +22,16 @@ export class CommandRunner {
 
     return await this.errorHandler.withRetry(async () => {
       const result = await execa(command, args, defaultOptions);
-      return {
+      const output = {
         success: true,
         stdout: result.stdout,
         stderr: result.stderr,
         exitCode: result.exitCode
       };
+      if (this.verbose && output.stdout) {
+        this.logger.info(output.stdout);
+      }
+      return output;
     }, 'command-execution', {
       operation: `${command} ${args.join(' ')}`,
       command,

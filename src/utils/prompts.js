@@ -9,7 +9,7 @@ export class Prompts {
         { name: 'Phase 2: Install basic tools (Micro editor, Git, plugins)', value: 'tools', checked: true },
         { name: 'Phase 3: Configure editor and shell settings', value: 'config', checked: true },
         { name: 'Phase 4: Install admin tools (htop, ncdu, ufw, fail2ban, tmux)', value: 'admin', checked: true },
-        { name: 'Phase 5: Install optional tools (bat, curl, wget, etc.)', value: 'optional', checked: false }
+        { name: 'Phase 5: Install optional tools (bat, curl, wget, etc.)', value: 'optional', checked: true }
       ],
       microThemes: [
         { name: 'Default', value: 'default' },

@@ -61,21 +61,18 @@ A comprehensive, interactive VPS provisioning script that transforms a fresh Ubu
 
 ### Quick Start (Recommended)
 
-1. **Install Node.js** (required for fresh VPS):
+1. **Install Node.js and nvm with the provided script** (recommended for fresh VPS):
    ```bash
-   # Download and install nvm (Node Version Manager)
-   curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
-
-   # Reload shell configuration (or restart your terminal)
-   source ~/.bashrc
-   # Or if using zsh: source ~/.zshrc
-
-   # Install Node.js LTS version
-   nvm install --lts
-
-   # Use the installed version
-   nvm use --lts
+   bash setup_node.sh
    ```
+   This script will:
+   - Download and install nvm (Node Version Manager)
+   - Source nvm for immediate use
+   - Install Node.js v22 (latest LTS)
+   - Print and verify node and npm versions
+   - Pause between steps so you can observe the process
+
+   _You can review or customize the script in `setup_node.sh` before running if desired._
 
 2. **Verify Node.js installation**:
    ```bash
