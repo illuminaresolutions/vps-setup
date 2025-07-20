@@ -61,7 +61,13 @@ A comprehensive, interactive VPS provisioning script that transforms a fresh Ubu
 
 ### Quick Start (Recommended)
 
-1. **Install Node.js and nvm with the provided script** (recommended for fresh VPS):
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/illuminaresolutions/vps-setup.git
+   cd vps-setup
+   ```
+
+2. **Install Node.js and nvm with the provided script** (recommended for fresh VPS):
    ```bash
    bash setup_node.sh
    ```
@@ -74,17 +80,11 @@ A comprehensive, interactive VPS provisioning script that transforms a fresh Ubu
 
    _You can review or customize the script in `setup_node.sh` before running if desired._
 
-2. **Verify Node.js installation**:
+3. **Verify Node.js installation**:
    ```bash
    node --version  # Should show the LTS version
    npm --version   # Should show the corresponding npm version
    nvm current     # Should show the current Node.js version
-   ```
-
-3. **Clone the repository**:
-   ```bash
-   git clone https://github.com/illuminaresolutions/vps-setup.git
-   cd vps-setup
    ```
 
 4. **Install dependencies**:
