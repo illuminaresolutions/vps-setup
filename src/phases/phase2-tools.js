@@ -76,13 +76,13 @@ export class ToolsPhase {
       this.stateManager.setPhaseStatus('tools', { installed: true });
 
       // Output verification commands
-      this.logger.info('\nVerification commands:');
-      this.logger.info('micro --version');
-      this.logger.info('git --version');
-      this.logger.info('[ -d ~/.zsh/zsh-autosuggestions ] && echo "zsh-autosuggestions installed"');
-      this.logger.info('[ -d ~/.zsh/zsh-syntax-highlighting ] && echo "zsh-syntax-highlighting installed"');
-      this.logger.info('\nSingle-string test:');
-      this.logger.info('micro --version && git --version && [ -d ~/.zsh/zsh-autosuggestions ] && [ -d ~/.zsh/zsh-syntax-highlighting ] && echo "All essential tools installed"');
+      console.log('\nVerification commands:');
+      console.log('micro --version');
+      console.log('git --version');
+      console.log('[ -d ~/.zsh/zsh-autosuggestions ] && echo "zsh-autosuggestions installed"');
+      console.log('[ -d ~/.zsh/zsh-syntax-highlighting ] && echo "zsh-syntax-highlighting installed"');
+      console.log('\nSingle-string test:');
+      console.log('micro --version && git --version && [ -d ~/.zsh/zsh-autosuggestions ] && [ -d ~/.zsh/zsh-syntax-highlighting ] && echo "All essential tools installed"');
       return { success: true, results };
 
     } catch (error) {

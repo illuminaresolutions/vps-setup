@@ -116,25 +116,26 @@ export class Validator {
     }
   }
 
-  async validateDirectory(path, createIfMissing = false) {
+  async validateDirectory(dirPath, createIfMissing = false) {
+    const expandedPath = this.Utils.expandTilde(dirPath);
     try {
-      const exists = await fs.pathExists(path);
+      const exists = await fs.pathExists(expandedPath);
       if (!exists) {
         if (createIfMissing) {
-          await fs.ensureDir(path);
+          await fs.ensureDir(expandedPath);
           return { valid: true, created: true };
         } else {
-          return { valid: false, error: `Directory not found: ${path}` };
+          return { valid: false, error: `Directory not found: ${dirPath}` };
         }
       }
       
-      const stats = await fs.stat(path);
+      const stats = await fs.stat(expandedPath);
       if (!stats.isDirectory()) {
-        return { valid: false, error: `Path exists but is not a directory: ${path}` };
+        return { valid: false, error: `Path exists but is not a directory: ${dirPath}` };
       }
       
-      const isReadable = await fs.access(path, fs.constants.R_OK).then(() => true).catch(() => false);
-      const isWritable = await fs.access(path, fs.constants.W_OK).then(() => true).catch(() => false);
+      const isReadable = await fs.access(expandedPath, fs.constants.R_OK).then(() => true).catch(() => false);
+      const isWritable = await fs.access(expandedPath, fs.constants.W_OK).then(() => true).catch(() => false);
       
       return {
         valid: true,
