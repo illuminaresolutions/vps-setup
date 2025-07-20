@@ -299,7 +299,7 @@ set -g status-right-length 50
       await this.validator.Utils.backupFile(configFile);
       
       // Write new config using fs-extra
-      const fs = await import('fs-extra');
+      const { default: fs } = await import('fs-extra');
       await fs.writeFile(expandedPath, tmuxConfig, 'utf8');
       
       this.logger.success('Tmux configured successfully');
