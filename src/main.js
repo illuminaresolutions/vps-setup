@@ -48,7 +48,7 @@ export class VpsSetupOrchestrator {
       await this.performPreflightChecks();
       
       // Load or initialize state
-      await this.initializeState();
+      await this.initializeState(options);
       
       // Detect system information
       const systemInfo = await this.systemDetector.detectSystem();
@@ -109,10 +109,18 @@ export class VpsSetupOrchestrator {
     }, 'network', { operation: 'internet connectivity check' });
   }
 
-  async initializeState() {
+  async initializeState(options = {}) {
     try {
-      await this.stateManager.loadState();
-      this.logger.info('📋 Loaded existing state');
+      // Reset state if requested
+      if (options.resetState) {
+        this.logger.info('🔄 Resetting state file');
+        this.stateManager.reset();
+        await this.stateManager.saveState();
+        this.logger.info('📋 State reset complete');
+      } else {
+        await this.stateManager.loadState();
+        this.logger.info('📋 Loaded existing state');
+      }
     } catch (error) {
       this.logger.info('📋 Initializing new state');
       await this.stateManager.initializeState();
@@ -171,6 +179,12 @@ export class VpsSetupOrchestrator {
   }
 
   async shouldSkipPhase(phase, options) {
+    // Check if phase is explicitly forced to run
+    if (options.forcePhases && options.forcePhases.includes(phase.getName())) {
+      this.logger.info(`🔄 Forcing re-run of ${phase.getName()}`);
+      return false;
+    }
+    
     // Check if phase is already completed
     const phaseState = await this.stateManager.getPhaseState(phase.getName());
     if (phaseState && phaseState.status === 'completed') {

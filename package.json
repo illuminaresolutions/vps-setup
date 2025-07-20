@@ -7,6 +7,11 @@
   "scripts": {
     "start": "node vps-setup.js",
     "dev": "node --watch vps-setup.js",
+    "fix-plugins": "node vps-setup.js --force-phases tools",
+    "reset": "node vps-setup.js --reset-state",
+    "force-tools": "node vps-setup.js --force-phases tools",
+    "force-zsh": "node vps-setup.js --force-phases zsh",
+    "force-config": "node vps-setup.js --force-phases config",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [

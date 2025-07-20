@@ -28,6 +28,15 @@ for (let i = 0; i < args.length; i++) {
         i++;
       }
       break;
+    case '--reset-state':
+      options.resetState = true;
+      break;
+    case '--force-phases':
+      if (i + 1 < args.length) {
+        options.forcePhases = args[i + 1].split(',');
+        i++;
+      }
+      break;
     case '--help':
     case '-h':
       console.log(`
@@ -39,6 +48,8 @@ Options:
   --continue-on-error    Continue execution even if a phase fails
   --skip-optional        Skip all optional phases
   --skip-phases <list>   Comma-separated list of phases to skip
+  --reset-state          Reset the state file to force re-run all phases
+  --force-phases <list>  Comma-separated list of phases to force re-run
   --verbose              Enable verbose logging
   --help, -h            Show this help message
 
@@ -54,6 +65,8 @@ Examples:
   node vps-setup.js --continue-on-error
   node vps-setup.js --skip-phases admin,optional
   node vps-setup.js --skip-optional --verbose
+  node vps-setup.js --reset-state
+  node vps-setup.js --force-phases tools
 `);
       process.exit(0);
       break;
