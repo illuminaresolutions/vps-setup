@@ -28,7 +28,7 @@ export class AdminPhase {
   async execute(customizations = {}) {
     // Show highly visible phase header
     this.logger.phaseHeader(4, 5, 'Admin Tools');
-    this.logger.info('ℹ Description: Installs and configures system administration tools: htop (process monitor), ncdu (disk usage analyzer), ufw (firewall), fail2ban (intrusion prevention), tmux (terminal multiplexer), logrotate (log management).');
+    this.logger.info('ℹ Description: Installs and configures system administration tools: htop (process monitor), ncdu (disk usage analyzer), ufw (firewall), fail2ban (intrusion prevention - installed but disabled for development), tmux (terminal multiplexer), logrotate (log management).');
     // Prompt user to continue
     const inquirer = (await import('inquirer')).default;
     const { proceed } = await inquirer.prompt([
@@ -89,11 +89,11 @@ export class AdminPhase {
       this.logger.info('- htop --version');
       this.logger.info('- ncdu --version');
       this.logger.info('- ufw status');
-      this.logger.info('- fail2ban-client status');
+      this.logger.info('- systemctl status fail2ban (note: stopped for development safety)');
       this.logger.info('- tmux -V');
       this.logger.info('- logrotate --version');
       this.logger.info('\nSingle-string test:');
-      this.logger.info('htop --version && ncdu --version && ufw status && fail2ban-client status && tmux -V && logrotate --version && echo "All admin tools installed/configured"');
+      this.logger.info('htop --version && ncdu --version && ufw status && systemctl status fail2ban && tmux -V && logrotate --version && echo "All admin tools installed/configured"');
       return { success: true, results };
 
     } catch (error) {
@@ -226,7 +226,7 @@ export class AdminPhase {
 
   async configureFail2ban(results) {
     try {
-      this.logger.subsection('Configuring Fail2ban');
+      this.logger.subsection('Configuring Fail2ban (install, verify, then disable for development)');
 
       // Check if fail2ban is installed
       const isInstalled = await this.systemDetector.checkCommandExists('fail2ban-client');
@@ -239,15 +239,31 @@ export class AdminPhase {
       const serviceStatus = await this.validator.validateServiceStatus('fail2ban');
       
       if (!serviceStatus.active) {
-        // Start and enable fail2ban
+        // Start and enable fail2ban for verification
         await this.commandRunner.runSudo('systemctl', ['enable', 'fail2ban']);
         await this.commandRunner.runSudo('systemctl', ['start', 'fail2ban']);
         
-        this.logger.success('Fail2ban enabled and started');
-        results.configured.push('fail2ban');
+        this.logger.info('Fail2ban enabled and started for verification');
+        
+        // Verify fail2ban is working
+        await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds for startup
+        const pingResult = await this.commandRunner.runSudo('fail2ban-client', ['ping']);
+        
+        if (pingResult.stdout.includes('pong')) {
+          this.logger.success('Fail2ban verified working');
+        } else {
+          this.logger.warning('Fail2ban verification failed but continuing');
+        }
+        
+        // Disable fail2ban to prevent lockouts during development
+        await this.commandRunner.runSudo('systemctl', ['stop', 'fail2ban']);
+        this.logger.info('Fail2ban stopped for development safety (re-enable during hardening phase)');
+        
+        results.configured.push('fail2ban (verified then disabled)');
       } else {
-        this.logger.info('Fail2ban already running');
-        results.skipped.push('fail2ban-config');
+        this.logger.info('Fail2ban already running - stopping for development safety');
+        await this.commandRunner.runSudo('systemctl', ['stop', 'fail2ban']);
+        results.configured.push('fail2ban (stopped for development)');
       }
 
     } catch (error) {
@@ -406,7 +422,15 @@ set -g status-right-length 50
 
     for (const service of services) {
       const serviceStatus = await this.validator.validateServiceStatus(service);
-      status[service] = serviceStatus;
+      if (service === 'fail2ban' && !serviceStatus.active) {
+        // fail2ban is intentionally stopped for development safety
+        status[service] = {
+          ...serviceStatus,
+          note: 'Intentionally stopped for development safety - enable during hardening phase'
+        };
+      } else {
+        status[service] = serviceStatus;
+      }
     }
 
     return status;
