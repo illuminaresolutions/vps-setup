@@ -288,11 +288,11 @@ export class AdminPhase {
 
       // Create basic tmux configuration
       const tmuxConfig = `# Tmux configuration
-set -g prefix Tab
-unbind C-b
-bind-key Tab send-prefix
+# Prefix: CTRL+B (default)
 
 # Enable mouse support
+# - Allows using the mouse wheel to scroll through tmux history.
+# - To select text: Hold the Shift key, then click and drag.
 set -g mouse on
 
 # Easier pane switching
